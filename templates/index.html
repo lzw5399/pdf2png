@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pdf转Png小工具</title>
+</head>
+<body>
+选择pdf文件上传(支持多选)，并点击下载将<br>
+<input type="file" multiple="multiple" accept="application/pdf" id="pdfs">
+
+<br><br>
+<input type="button" value="转换成png" id="convertBtn">
+
+<script>
+    window.onload = () => {
+        let ui = {
+            pdfs: document.getElementById('pdfs'),
+            convertBtn: document.getElementById('convertBtn'),
+        }
+        ui.convertBtn.addEventListener("click", () => {
+            generateRequest()
+        })
+
+        let http = {
+            post: (path, data) => {
+                return new Promise((resolve, reject) => {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open("POST", path, true);
+                    xhr.onreadystatechange = () => {
+                        if (xhr.readyState === XMLHttpRequest.DONE) return resolve(xhr);
+                    };
+                    xhr.send(data);
+                });
+            }
+        };
+
+        let generateRequest = () => {
+            let req = {
+                path: '/api/pdf2png',
+                data: new FormData()
+            }
+
+            debugger
+            if (ui.pdfs.files && ui.pdfs.files.length !== 0) {
+                let f = ui.pdfs.files
+                for (let i = 0; i < ui.pdfs.files.length; i++) {
+                    req.data.append('file', ui.pdfs.files[i])
+                }
+
+                http.post(req.path, req.data).catch(() => alert('转换失败'))
+
+            } else {
+                alert('当前未选中pdf文件，请选中在进行操作')
+            }
+        }
+    }
+</script>
+</body>
+</html>
