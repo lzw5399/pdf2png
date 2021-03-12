@@ -127,7 +127,7 @@ def pdf2png():
     zip_path = os.path.join(unique_path, zip_file_name)
     zip_dir(unique_images_path, zip_path)
 
-    return send_from_directory(zip_path, filename=zip_file_name, as_attachment=True)
+    return send_from_directory(unique_path, filename=zip_file_name, as_attachment=True)
 
 
 if __name__ == '__main__':
