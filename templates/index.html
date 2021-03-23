@@ -5,7 +5,14 @@
     <title>Pdf转Png小工具</title>
 </head>
 <body>
-选择pdf文件上传(支持多选)，并点击下载将<br>
+<h1>pdf转png图片工具</h1>
+<h3>使用步骤</h3>
+<ul>
+    <li>选择pdf文件上传(支持多选)</li>
+    <li>点击“转换成png”并等待下载文件</li>
+    <li>会下载一个zip压缩包包含转换出来的png文件</li>
+</ul>
+<hr>
 <input type="file" multiple="multiple" accept="application/pdf" id="pdfs">
 
 <br><br>
@@ -16,9 +23,18 @@
         let ui = {
             pdfs: document.getElementById('pdfs'),
             convertBtn: document.getElementById('convertBtn'),
+            convertingStatus: () => {
+                ui.convertBtn.setAttribute('disabled', 'disabled')
+                ui.convertBtn.value = '转换中, 请稍候...'
+            },
+            clearStatus: () => {
+                ui.convertBtn.disabled = false
+                ui.convertBtn.value = '转换成png'
+            }
         }
         ui.convertBtn.addEventListener("click", () => {
-            generateRequest()
+            ui.convertingStatus()
+            sendRequest()
         })
 
         let http = {
@@ -29,26 +45,41 @@
                     xhr.onreadystatechange = () => {
                         if (xhr.readyState === XMLHttpRequest.DONE) return resolve(xhr);
                     };
+                    xhr.responseType = 'blob';
                     xhr.send(data);
                 });
             }
         };
 
-        let generateRequest = () => {
+        let saveBlob = (blob, fileName) => {
+            let a = document.createElement('a');
+            a.href = window.URL.createObjectURL(blob);
+            a.download = fileName;
+            a.dispatchEvent(new MouseEvent('click'));
+        }
+
+        let sendRequest = () => {
             let req = {
                 path: '/api/pdf2png',
                 data: new FormData()
             }
 
-            debugger
             if (ui.pdfs.files && ui.pdfs.files.length !== 0) {
                 let f = ui.pdfs.files
                 for (let i = 0; i < ui.pdfs.files.length; i++) {
                     req.data.append('file', ui.pdfs.files[i])
                 }
 
-                http.post(req.path, req.data).catch(() => alert('转换失败'))
-
+                http.post(req.path, req.data).then(xhr => {
+                    const blob = xhr.response
+                    const contentDispo = xhr.getResponseHeader('Content-Disposition')
+                    const fileName = contentDispo.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)[1]
+                    saveBlob(blob, fileName)
+                    ui.clearStatus()
+                }).catch(() => {
+                    alert('转换失败')
+                    ui.clearStatus()
+                })
             } else {
                 alert('当前未选中pdf文件，请选中在进行操作')
             }

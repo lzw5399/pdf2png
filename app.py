@@ -42,7 +42,7 @@ def listdir(path, list_name):
         file_path = os.path.join(path, file)
         if os.path.isdir(file_path):
             listdir(file_path, list_name)
-        elif os.path.splitext(file_path)[1] == '.pdf':
+        elif os.path.splitext(file_path)[1].lower() == '.pdf':
             list_name.append(file_path)
 
 
@@ -127,7 +127,7 @@ def pdf2png():
     zip_path = os.path.join(unique_path, zip_file_name)
     zip_dir(unique_images_path, zip_path)
 
-    return send_from_directory(zip_path, filename=zip_file_name, as_attachment=True)
+    return send_from_directory(unique_path, filename=zip_file_name, as_attachment=True)
 
 
 if __name__ == '__main__':
